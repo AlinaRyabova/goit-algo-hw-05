@@ -142,3 +142,44 @@ for text_key, algo_times in results.items():
     print(f"{text_key}:")
     for algo, time_taken in algo_times.items():
         print(f"  {algo}: {time_taken:.6f} seconds")
+
+
+## Висновки щодо швидкостей алгоритмів пошуку підрядків
+
+### Текст 1
+
+#Існуючий підрядок (`existing_substring`)**:
+#KMP: 5.793580 seconds
+#BM: 2.031203 seconds
+#RK: 14.366181 seconds
+  
+#Найшвидший алгоритм:** BM з часом 2.031203 seconds.
+
+#Неіснуючий підрядок (`non_existing_substring`)**:
+#KMP: 6.385597 seconds
+#BM: 2.563652 seconds
+#RK: 13.602967 seconds
+  
+#Найшвидший алгоритм:** BM з часом 2.563652 seconds.
+
+### Текст 2
+
+#Існуючий підрядок (`existing_substring`)**:
+#KMP: 7.433587 seconds
+#BM: 2.650281 seconds
+#RK: 21.181163 seconds
+  
+#Найшвидший алгоритм:** BM з часом 2.650281 seconds.
+
+#Неіснуючий підрядок (`non_existing_substring`)**:
+#KMP: 6.719571 seconds
+#BM: 2.593751 seconds
+#RK: 32.330680 seconds
+  
+#Найшвидший алгоритм:** BM з часом 2.593751 seconds.
+
+### В цілому (обидва тексти)
+
+#Найшвидший алгоритм для існуючих та неіснуючих підрядків:** BM.
+
+#BM демонструє найкращі показники швидкості для обох текстів, незалежно від того, чи є підрядок в тексті чи ні.
