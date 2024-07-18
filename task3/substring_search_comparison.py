@@ -1,5 +1,7 @@
 import timeit
 import gdown
+from tabulate import tabulate
+import chardet
 
 # Завантаження файлів з Google Диску
 def download_file_from_google_drive(file_id, output):
@@ -10,19 +12,27 @@ def download_file_from_google_drive(file_id, output):
 download_file_from_google_drive('18_R5vEQ3eDuy2VdV3K5Lu-R-B-adxXZh', 'article1.txt')
 download_file_from_google_drive('13hSt4JkJc11nckZZz2yoFHYL89a4XkMZ', 'article2.txt')
 
-# Читання текстів з файлів
+# Функція для визначення кодування файлу
+def detect_encoding(file_path):
+    with open(file_path, 'rb') as f:
+        result = chardet.detect(f.read())
+    return result['encoding']
+
+# Читання текстів з файлів з автоматичним визначенням кодування
+def read_file(file_path):
+    encoding = detect_encoding(file_path)
+    with open(file_path, 'r', encoding=encoding) as file:
+        return file.read()
+
 try:
-    with open('article1.txt', 'r', encoding='cp1251') as file:
-        text1 = file.read()
+    text1 = read_file('article1.txt')
 except UnicodeDecodeError as e:
     print(f"UnicodeDecodeError: {e}")
 
 try:
-    with open('article2.txt', 'r', encoding='cp1251') as file:
-        text2 = file.read()
+    text2 = read_file('article2.txt')
 except UnicodeDecodeError as e:
     print(f"UnicodeDecodeError: {e}")
-
 
 # Алгоритм Кнута-Морріса-Пратта (KMP)
 def kmp_search(text, pattern):
@@ -110,7 +120,7 @@ def measure_time(func, text, pattern):
     return timer.timeit(number=1000)
 
 # Підрядки для пошуку
-existing_substring = "sample text"
+existing_substring = "структури даних"
 non_existing_substring = "not present"
 
 # Вимірювання часу для кожного алгоритму та кожного підрядка в обох текстах
@@ -137,49 +147,48 @@ results = {
     },
 }
 
-# Вивід результатів
-for text_key, algo_times in results.items():
-    print(f"{text_key}:")
-    for algo, time_taken in algo_times.items():
-        print(f"  {algo}: {time_taken:.6f} seconds")
+# Форматування результатів у вигляді таблиці
+table_data = [
+    ["text1_existing", "Існуючий підрядок", results["text1_existing"]["kmp"], results["text1_existing"]["bm"], results["text1_existing"]["rk"]],
+    ["text1_non_existing", "Неіснуючий підрядок", results["text1_non_existing"]["kmp"], results["text1_non_existing"]["bm"], results["text1_non_existing"]["rk"]],
+    ["text2_existing", "Існуючий підрядок", results["text2_existing"]["kmp"], results["text2_existing"]["bm"], results["text2_existing"]["rk"]],
+    ["text2_non_existing", "Неіснуючий підрядок", results["text2_non_existing"]["kmp"], results["text2_non_existing"]["bm"], results["text2_non_existing"]["rk"]],
+]
 
+headers = ["Текст", "Підрядок", "KMP (сек)", "BM (сек)", "RK (сек)"]
 
-## Висновки щодо швидкостей алгоритмів пошуку підрядків
+# Вивід таблиці
+print(tabulate(table_data, headers=headers, tablefmt="pretty"))
 
-### Текст 1
+# Висновки
+conclusions = [
+    ("text1_existing", "BM", results["text1_existing"]["bm"]),
+    ("text1_non_existing", "BM", results["text1_non_existing"]["bm"]),
+    ("text2_existing", "BM", results["text2_existing"]["bm"]),
+    ("text2_non_existing", "BM", results["text2_non_existing"]["bm"]),
+]
 
-#Існуючий підрядок (`existing_substring`)**:
-#KMP: 5.793580 seconds
-#BM: 2.031203 seconds
-#RK: 14.366181 seconds
-  
-#Найшвидший алгоритм:** BM з часом 2.031203 seconds.
+print("\nНайшвидший алгоритм для кожного випадку:")
+for text, algo, time in conclusions:
+    print(f"- {text}: {algo} з часом {time:.6f} seconds")
 
-#Неіснуючий підрядок (`non_existing_substring`)**:
-#KMP: 6.385597 seconds
-#BM: 2.563652 seconds
-#RK: 13.602967 seconds
-  
-#Найшвидший алгоритм:** BM з часом 2.563652 seconds.
+print("\nВисновок:")
+print("Алгоритм Боєра-Мура (BM) демонструє найкращі показники швидкості для всіх випадків.")
 
-### Текст 2
+#+--------------------+---------------------+----------------------+---------------------+----------------------+
+#|       Текст        |      Підрядок       |      KMP (сек)       |      BM (сек)       |       RK (сек)       |
+#+--------------------+---------------------+----------------------+---------------------+----------------------+
+#|   text1_existing   |  Існуючий підрядок  |  0.3222286999807693  | 0.07222729997010902 |  0.6715334999607876  |
+#| text1_non_existing | Неіснуючий підрядок |  4.193724300013855   |  1.358704200014472  |  9.957731599977706   |
+#|   text2_existing   |  Існуючий підрядок  | 0.016281200048979372 | 0.01286469999467954 | 0.025331500044558197 |
+#| text2_non_existing | Неіснуючий підрядок |  4.971765799971763   | 1.8203945999848656  |  16.882760100008454  |
+#+--------------------+---------------------+----------------------+---------------------+----------------------+
 
-#Існуючий підрядок (`existing_substring`)**:
-#KMP: 7.433587 seconds
-#BM: 2.650281 seconds
-#RK: 21.181163 seconds
-  
-#Найшвидший алгоритм:** BM з часом 2.650281 seconds.
+##Найшвидший алгоритм для кожного випадку:
+#text1_existing: BM з часом 0.072227 seconds
+#text1_non_existing: BM з часом 1.358704 seconds
+#text2_existing: BM з часом 0.012865 seconds
+#text2_non_existing: BM з часом 1.820395 seconds
 
-#Неіснуючий підрядок (`non_existing_substring`)**:
-#KMP: 6.719571 seconds
-#BM: 2.593751 seconds
-#RK: 32.330680 seconds
-  
-#Найшвидший алгоритм:** BM з часом 2.593751 seconds.
-
-### В цілому (обидва тексти)
-
-#Найшвидший алгоритм для існуючих та неіснуючих підрядків:** BM.
-
-#BM демонструє найкращі показники швидкості для обох текстів, незалежно від того, чи є підрядок в тексті чи ні.
+##Висновок:
+#Алгоритм Боєра-Мура (BM) демонструє найкращі показники швидкості для всіх випадків.
